@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>البحث عن حساب العميل</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Tajawal', Arial, sans-serif;
+        background: #f2f4f7;
+        color: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .container {
+        width: 95%;
+        max-width: 450px;
+        background: #fff;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 20px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #0d6efd;
+    }
+
+    input {
+        width: 100%;
+        padding: 14px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: 2px solid #ccc;
+        outline: none;
+        transition: .2s;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    input:focus {
+        border-color: #0d6efd;
+    }
+
+    button {
+        width: 100%;
+        padding: 15px;
+        margin-top: 12px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        font-size: 18px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    button:hover {
+        background: #0b57d0;
+    }
+
+    #result {
+        margin-top: 20px;
+        background: #eef3ff;
+        padding: 18px;
+        border-radius: 10px;
+        font-size: 18px;
+        display: none;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <h2>شركة اوميدي راسان    </h2>
+
+    <input type="number" id="phoneInput" placeholder="أدخل رقم الهاتف">
+    <button onclick="searchCustomer()">بحث</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwai4SGPXRooeWvvxvRrJ5KfNRfUKlU20SAvjc3RT-xcAKzlrb5sZ_UrEJHdtCqZmCz2g/exec"; // ضع رابط API هنا
+
+function normalizePhone(phone) {
+    if (phone.startsWith("0")) return phone.substring(1);
+    return phone;
+}
+
+async function searchCustomer() {
+    let phone = document.getElementById("phoneInput").value.trim();
+    phone = normalizePhone(phone);
+
+    if (!phone) return;
+
+    localStorage.setItem("savedPhone", phone);
+
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = "⏳ جاري البحث...";
+
+    try {
+        const response = await fetch(`${API_URL}?phone=${phone}`);
+        const data = await response.json();
+
+        if (data.error) {
+            resultDiv.innerHTML = "❌ لم يتم العثور على العميل.";
+            return;
+        }
+
+        resultDiv.innerHTML = `
+            <b>  </b> ${data.customerName}<br><br>
+            <b>💰 الحساب :</b> ${data.balance}
+        `;
+    } catch (error) {
+        resultDiv.innerHTML = "⚠️ خطأ في الاتصال، حاول مرة أخرى.";
+    }
+}
+
+// تشغيل البحث التلقائي عند فتح الصفحة
+window.onload = function() {
+    const savedPhone = localStorage.getItem("savedPhone");
+    if (savedPhone) {
+        document.getElementById("phoneInput").value = savedPhone;
+        searchCustomer();
+    }
+};
+</script>
+
+</body>
+</html>
